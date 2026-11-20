@@ -11,7 +11,7 @@ from typing import Optional
 
 from mcp.server.mcpserver import MCPServer
 
-from kde_desktop_mcp.input import pointer_action, type_action
+from kde_desktop_mcp.input import manage_ydotool_daemon, pointer_action, type_action
 from kde_desktop_mcp.screenshot import take_screenshot
 from kde_desktop_mcp.windows import activate_kwin_window, get_kwin_windows
 
@@ -101,6 +101,16 @@ def create_server() -> MCPServer:
     def type_text(text: str) -> str:
         """Type text into the currently focused window using system input synthesis."""
         res = type_action(text=text)
+        return json.dumps(res)
+
+    @server.tool()
+    def manage_daemon(action: str = "status") -> str:
+        """Manage the ydotool input daemon lifecycle (status, start, stop, restart).
+
+        Args:
+            action: 'status' to inspect, 'start' to launch, 'stop' to terminate, or 'restart' to restart.
+        """
+        res = manage_ydotool_daemon(action=action)
         return json.dumps(res)
 
     return server

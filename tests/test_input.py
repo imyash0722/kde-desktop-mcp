@@ -1,7 +1,7 @@
 """Test mouse and keyboard input automation."""
 
-from unittest.mock import patch
-from kde_desktop_mcp.input import pointer_action, type_action
+from unittest.mock import MagicMock, patch
+from kde_desktop_mcp.input import manage_ydotool_daemon, pointer_action, type_action
 
 
 @patch("shutil.which")
@@ -52,3 +52,44 @@ def test_type_action(mock_run, mock_which):
     assert res["ok"] is True
     assert res["typed"] == "hello world"
     assert res["backend"] == "wtype"
+
+
+@patch("shutil.which")
+@patch("subprocess.run")
+def test_manage_ydotool_daemon_status(mock_run, mock_which):
+    mock_which.return_value = "/usr/bin/systemctl"
+    mock_proc = MagicMock()
+    mock_proc.stdout = "active\n"
+    mock_proc.returncode = 0
+    mock_run.return_value = mock_proc
+
+    res = manage_ydotool_daemon("status")
+    assert res["ok"] is True
+    assert res["active"] is True
+
+
+@patch("shutil.which")
+@patch("subprocess.run")
+def test_manage_ydotool_daemon_start(mock_run, mock_which):
+    mock_which.return_value = "/usr/bin/systemctl"
+    mock_proc = MagicMock()
+    mock_proc.returncode = 0
+    mock_run.return_value = mock_proc
+
+    res = manage_ydotool_daemon("start")
+    assert res["ok"] is True
+    assert res["action"] == "start"
+
+
+@patch("shutil.which")
+@patch("subprocess.run")
+def test_manage_ydotool_daemon_stop(mock_run, mock_which):
+    mock_which.return_value = "/usr/bin/systemctl"
+    mock_proc = MagicMock()
+    mock_proc.returncode = 0
+    mock_run.return_value = mock_proc
+
+    res = manage_ydotool_daemon("stop")
+    assert res["ok"] is True
+    assert res["action"] == "stop"
+

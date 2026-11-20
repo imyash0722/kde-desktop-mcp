@@ -111,3 +111,79 @@ def type_action(text: str) -> Dict[str, Any]:
             return {"ok": False, "error": f"ydotool typing failed: {e}"}
 
     return {"ok": False, "error": "Neither wtype nor ydotool is available for typing."}
+
+
+def manage_ydotool_daemon(action: str = "status") -> Dict[str, Any]:
+    """Check, start, stop, or restart the ydotool daemon.
+
+    Uses systemd user service ('systemctl --user') with fallback to direct process management.
+    """
+    action_norm = action.lower().strip()
+    systemctl = shutil.which("systemctl")
+
+    if action_norm == "status":
+        is_active = False
+        details = ""
+        if systemctl:
+            res = subprocess.run(
+                [systemctl, "--user", "is-active", "ydotool.service"],
+                capture_output=True,
+                text=True,
+            )
+            is_active = res.stdout.strip() == "active"
+            details = res.stdout.strip()
+        if not is_active:
+            pgrep = shutil.which("pgrep")
+            if pgrep:
+                res = subprocess.run([pgrep, "-x", "ydotoold"], capture_output=True, text=True)
+                if res.returncode == 0:
+                    is_active = True
+                    details = f"running (pid {res.stdout.strip()})"
+        return {"ok": True, "active": is_active, "status": details or "inactive"}
+
+    if action_norm == "start":
+        if systemctl:
+            res = subprocess.run(
+                [systemctl, "--user", "start", "ydotool.service"],
+                capture_output=True,
+                text=True,
+            )
+            if res.returncode == 0:
+                return {"ok": True, "action": "start", "status": "started via systemd --user"}
+        ydotoold = shutil.which("ydotoold")
+        if ydotoold:
+            subprocess.Popen([ydotoold], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            return {"ok": True, "action": "start", "status": "started background process"}
+        return {"ok": False, "error": "Failed to start ydotoold: neither systemd service nor binary found."}
+
+    if action_norm == "stop":
+        if systemctl:
+            res = subprocess.run(
+                [systemctl, "--user", "stop", "ydotool.service"],
+                capture_output=True,
+                text=True,
+            )
+            if res.returncode == 0:
+                return {"ok": True, "action": "stop", "status": "stopped via systemd --user"}
+        pkill = shutil.which("pkill")
+        if pkill:
+            subprocess.run([pkill, "-x", "ydotoold"], capture_output=True)
+            return {"ok": True, "action": "stop", "status": "killed ydotoold process"}
+        return {"ok": False, "error": "Could not stop ydotoold."}
+
+    if action_norm == "restart":
+        if systemctl:
+            res = subprocess.run(
+                [systemctl, "--user", "restart", "ydotool.service"],
+                capture_output=True,
+                text=True,
+            )
+            if res.returncode == 0:
+                return {"ok": True, "action": "restart", "status": "restarted via systemd --user"}
+        manage_ydotool_daemon("stop")
+        return manage_ydotool_daemon("start")
+
+    return {
+        "ok": False,
+        "error": f"Unknown daemon action: {action}. Use 'status', 'start', 'stop', or 'restart'.",
+    }

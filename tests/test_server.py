@@ -18,6 +18,6 @@ def test_server_registered_tools():
         return [t.name for t in tools]
 
     tool_names = asyncio.run(get_tool_names())
-    expected_tools = ["screenshot", "list_windows", "focus_window", "pointer", "type_text"]
+    expected_tools = ["screenshot", "list_windows", "focus_window", "pointer", "type_text", "manage_daemon"]
     for t in expected_tools:
         assert t in tool_names, f"Expected tool '{t}' not registered in server"
