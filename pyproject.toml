@@ -1,0 +1,66 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "kde-desktop-mcp"
+version = "0.1.0"
+description = "Model Context Protocol (MCP) server for KDE Plasma desktop automation, window targeting, screenshots, and input synthesis."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [
+    { name = "Yash", email = "imyash0722@users.noreply.github.com" },
+]
+keywords = [
+    "mcp",
+    "model-context-protocol",
+    "kde",
+    "plasma",
+    "kwin",
+    "wayland",
+    "screenshots",
+    "automation",
+    "ai-agent",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Desktop Environment :: K Desktop Environment (KDE)",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "mcp>=1.2.0",
+    "pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+    "pytest-asyncio>=0.23.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/imyash0722/kde-desktop-mcp"
+Repository = "https://github.com/imyash0722/kde-desktop-mcp"
+Issues = "https://github.com/imyash0722/kde-desktop-mcp/issues"
+
+[project.scripts]
+kde-desktop-mcp = "kde_desktop_mcp.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/kde_desktop_mcp"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+python_files = ["test_*.py"]
